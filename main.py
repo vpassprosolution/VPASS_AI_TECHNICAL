@@ -1,9 +1,16 @@
 import uvicorn
 import os
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles  # ✅ Import StaticFiles
 from chart_generator import generate_chart
 
 app = FastAPI()
+
+# ✅ Mount the "static/" directory so images can be served correctly
+if not os.path.exists("static"):
+    os.makedirs("static")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def read_root():

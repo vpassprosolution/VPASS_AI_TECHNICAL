@@ -15,7 +15,18 @@ if not os.path.exists("static"):
 def generate_chart(instrument: str, timeframe: str):
     """Generates and saves a chart based on instrument and timeframe."""
     
-    # Define Yahoo Finance symbols
+    # ✅ Correct the instrument names to match the API request format
+    instrument_map = {
+        "Gold (XAUUSD)": "gold",
+        "Bitcoin (BTC)": "bitcoin",
+        "Ethereum (ETH)": "ethereum",
+        "Dow Jones (DJI)": "dow jones",
+        "Nasdaq (IXIC)": "nasdaq",
+        "EUR/USD (EURUSD)": "eur/usd",
+        "GBP/USD (GBPUSD)": "gbp/usd"
+    }
+
+    # ✅ Define Yahoo Finance symbols
     symbol_map = {
         "gold": "GC=F",
         "bitcoin": "BTC-USD",
@@ -26,7 +37,7 @@ def generate_chart(instrument: str, timeframe: str):
         "gbp/usd": "GBPUSD=X"
     }
     
-    # Define valid timeframes
+    # ✅ Define valid timeframes
     valid_timeframes = {
         "5m": "5m",
         "15m": "15m",
@@ -36,17 +47,21 @@ def generate_chart(instrument: str, timeframe: str):
         "1d": "1d"
     }
 
-    # Validate instrument and timeframe
-    if instrument.lower() not in symbol_map or timeframe not in valid_timeframes:
+    # ✅ Convert API request instrument to correct format
+    if instrument in instrument_map:
+        instrument = instrument_map[instrument]  # Convert to correct name
+
+    # ✅ Check if instrument and timeframe are valid
+    if instrument not in symbol_map or timeframe not in valid_timeframes:
         print(f"❌ ERROR: Invalid instrument ({instrument}) or timeframe ({timeframe})")
         return None  
 
-    symbol = symbol_map[instrument.lower()]
+    symbol = symbol_map[instrument]
     yf_timeframe = valid_timeframes[timeframe]
     period = "7d" if timeframe == "1d" else "5d"
 
     try:
-        # Fetch historical data
+        # ✅ Fetch historical data
         data = yf.download(symbol, period=period, interval=yf_timeframe)
         
         if data.empty:

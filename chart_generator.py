@@ -57,11 +57,19 @@ def generate_chart(instrument: str, timeframe: str):
 
     # Fetch historical data
     try:
-        data = yf.download(symbol, period=period, interval=yf_timeframe)
-        
-        if data.empty:
-            print(f"No data available for {instrument} - {timeframe}")
-            return None
+    data = yf.download(symbol, period=period, interval=yf_timeframe)
+
+    if data.empty:
+        print(f"No data available for {instrument} - {timeframe}")
+        return None
+
+    # ✅ Debug print: Show received columns
+    print(f"🔍 DEBUG: Received columns for {instrument} ({timeframe}): {list(data.columns)}")
+
+except Exception as e:
+    print(f"❌ ERROR: Failed to fetch market data for {instrument} ({timeframe}). Exception: {e}")
+    return None
+
 
         # ✅ Flatten multi-index column names if they exist
         if isinstance(data.columns, pd.MultiIndex):

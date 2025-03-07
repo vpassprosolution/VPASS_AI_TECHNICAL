@@ -13,75 +13,43 @@ if not os.path.exists("static"):
     os.makedirs("static")
 
 def generate_chart(instrument: str, timeframe: str):
-    """Generates and saves a chart based on instrument and timeframe."""
+    """Simplified version: Generates and saves a chart image."""
     
-    # ✅ Correct the instrument names to match the API request format
-    instrument_map = {
-        "Gold (XAUUSD)": "gold",
-        "Bitcoin (BTC)": "bitcoin",
-        "Ethereum (ETH)": "ethereum",
-        "Dow Jones (DJI)": "dow jones",
-        "Nasdaq (IXIC)": "nasdaq",
-        "EUR/USD (EURUSD)": "eur/usd",
-        "GBP/USD (GBPUSD)": "gbp/usd"
-    }
-
     # ✅ Define Yahoo Finance symbols
     symbol_map = {
-        "gold": "GC=F",
-        "bitcoin": "BTC-USD",
-        "ethereum": "ETH-USD",
-        "dow jones": "^DJI",
-        "nasdaq": "^IXIC",
-        "eur/usd": "EURUSD=X",
-        "gbp/usd": "GBPUSD=X"
+        "Gold (XAUUSD)": "GC=F",
+        "Bitcoin (BTC)": "BTC-USD",
+        "Ethereum (ETH)": "ETH-USD",
+        "Dow Jones (DJI)": "^DJI",
+        "Nasdaq (IXIC)": "^IXIC",
+        "EUR/USD (EURUSD)": "EURUSD=X",
+        "GBP/USD (GBPUSD)": "GBPUSD=X"
     }
-    
+
     # ✅ Define valid timeframes
-    valid_timeframes = {
-        "5m": "5m",
-        "15m": "15m",
-        "30m": "30m",
-        "1h": "1h",
-        "4h": "1h",  # Yahoo does not support 4H, using 1H instead
-        "1d": "1d"
-    }
+    valid_timeframes = ["5m", "15m", "30m", "1h", "4h", "1d"]
 
-    # ✅ Convert API request instrument to correct format
-    if instrument in instrument_map:
-        instrument = instrument_map[instrument]  # Convert to correct name
-
-    # ✅ Check if instrument and timeframe are valid
+    # ✅ Validate instrument and timeframe
     if instrument not in symbol_map or timeframe not in valid_timeframes:
         print(f"❌ ERROR: Invalid instrument ({instrument}) or timeframe ({timeframe})")
         return None  
 
     symbol = symbol_map[instrument]
-    yf_timeframe = valid_timeframes[timeframe]
     period = "7d" if timeframe == "1d" else "5d"
 
     try:
-        # ✅ Fetch historical data
-        data = yf.download(symbol, period=period, interval=yf_timeframe)
+        # ✅ Fetch market data
+        data = yf.download(symbol, period=period, interval=timeframe)
         
         if data.empty:
             print(f"❌ ERROR: No data available for {instrument} ({timeframe}).")
             return None
 
-        # ✅ Convert all data to float, replacing errors with NaN
-        for col in ["Open", "High", "Low", "Close", "Volume"]:
-            if col in data.columns:
-                data[col] = pd.to_numeric(data[col], errors="coerce")
-
-        # ✅ Drop rows with NaN values to prevent errors
+        # ✅ Drop NaN values to avoid errors
         data.dropna(inplace=True)
 
-        if data.empty:
-            print(f"❌ ERROR: No valid numerical data available for {instrument} ({timeframe}).")
-            return None  # Stop execution if no data is available
-
-        # ✅ Generate and Save Chart
-        chart_filename = f"static/{instrument}_{timeframe}.png"
+        # ✅ Save Chart
+        chart_filename = f"static/{instrument.replace(' ', '_')}_{timeframe}.png"
 
         mpf.plot(
             data,

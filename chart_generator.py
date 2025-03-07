@@ -68,13 +68,17 @@ def generate_chart(instrument: str, timeframe: str):
             print(f"❌ ERROR: No data available for {instrument} ({timeframe}).")
             return None
 
-        # ✅ Ensure correct column names
-        required_columns = ["Open", "High", "Low", "Close", "Volume"]
-        missing_columns = [col for col in required_columns if col not in data.columns]
+        # ✅ Convert all data to float, replacing errors with NaN
+        for col in ["Open", "High", "Low", "Close", "Volume"]:
+            if col in data.columns:
+                data[col] = pd.to_numeric(data[col], errors="coerce")
 
-        if missing_columns:
-            print(f"❌ ERROR: Missing columns {missing_columns} for {instrument} ({timeframe})")
-            return None
+        # ✅ Drop rows with NaN values to prevent errors
+        data.dropna(inplace=True)
+
+        if data.empty:
+            print(f"❌ ERROR: No valid numerical data available for {instrument} ({timeframe}).")
+            return None  # Stop execution if no data is available
 
         # ✅ Generate and Save Chart
         chart_filename = f"static/{instrument}_{timeframe}.png"

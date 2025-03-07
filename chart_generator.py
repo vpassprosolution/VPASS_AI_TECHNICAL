@@ -5,6 +5,7 @@ import os
 import glob
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 # Ensure Matplotlib runs in non-GUI mode
 import matplotlib
@@ -15,13 +16,18 @@ if not os.path.exists("static"):
     os.makedirs("static")
 
 def delete_old_images():
-    """Delete all old images before saving a new one."""
-    old_images = glob.glob("static/*.png")  # Find all .png images
+    """Delete only images older than 10 minutes before saving a new one."""
+    old_images = glob.glob("static/*.png")
+    current_time = time.time()
+
     for image in old_images:
-        os.remove(image)  # Delete each image
+        if os.path.getmtime(image) < current_time - 600:  # 600 seconds = 10 minutes
+            os.remove(image)
 
 def generate_chart(instrument: str, timeframe: str):
-    # Define valid timeframes
+    print(f"🔍 DEBUG: Received columns for {instrument} ({timeframe}): {list(data.columns)}")
+
+# Define valid timeframes
     valid_timeframes = {
         "5m": "5m",
         "15m": "15m",
@@ -61,15 +67,11 @@ def generate_chart(instrument: str, timeframe: str):
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = ['_'.join(col).strip() for col in data.columns.values]
 
-        # ✅ Rename columns properly
-        rename_map = {
-            "Open_GC=F": "Open",
-            "High_GC=F": "High",
-            "Low_GC=F": "Low",
-            "Close_GC=F": "Close",
-            "Volume_GC=F": "Volume",
-        }
-        data.rename(columns=rename_map, inplace=True)
+        # ✅ Automatically rename any column that has an unexpected ticker suffix
+     for col in data.columns:
+         for key in ["Open", "High", "Low", "Close", "Volume"]:
+             if col.startswith(key) and col != key:
+                 data.rename(columns={col: key}, inplace=True)
 
         # ✅ Ensure numeric data and drop NaN rows
         for column in ["Open", "High", "Low", "Close", "Volume"]:
@@ -89,9 +91,18 @@ def generate_chart(instrument: str, timeframe: str):
     # Delete old images before saving a new one
     delete_old_images()
 
+    # ✅ Ensure required columns exist
+    required_columns = ["Open", "High", "Low", "Close", "Volume"]
+    missing_columns = [col for col in required_columns if col not in data.columns]
+
+    if missing_columns:
+    print(f"❌ ERROR: Missing columns {missing_columns} for {instrument} ({timeframe})")
+    return None  # Stop if critical data is missing
+
     # Define Support & Resistance Zones
     high_price = data["High"].max()
     low_price = data["Low"].min()
+
     last_price = data["Close"].iloc[-1]  # Get last closing price
 
     support_zone = (low_price, low_price * 1.005)  # Support Zone (5% buffer)

@@ -13,8 +13,8 @@ if not os.path.exists("static"):
     os.makedirs("static")
 
 def generate_chart(instrument: str, timeframe: str):
-    """Simplified version: Generates and saves a chart image."""
-    
+    """Generates and saves a chart image while ensuring all data is numeric."""
+
     # ✅ Define Yahoo Finance symbols
     symbol_map = {
         "Gold (XAUUSD)": "GC=F",
@@ -45,8 +45,17 @@ def generate_chart(instrument: str, timeframe: str):
             print(f"❌ ERROR: No data available for {instrument} ({timeframe}).")
             return None
 
-        # ✅ Drop NaN values to avoid errors
+        # ✅ Convert all data to float (force numeric conversion)
+        for col in ["Open", "High", "Low", "Close", "Volume"]:
+            if col in data.columns:
+                data[col] = pd.to_numeric(data[col], errors="coerce")
+
+        # ✅ Drop rows with NaN values
         data.dropna(inplace=True)
+
+        if data.empty:
+            print(f"❌ ERROR: No valid numerical data available for {instrument} ({timeframe}).")
+            return None
 
         # ✅ Save Chart
         chart_filename = f"static/{instrument.replace(' ', '_')}_{timeframe}.png"

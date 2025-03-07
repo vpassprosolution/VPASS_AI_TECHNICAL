@@ -17,5 +17,5 @@ def get_chart(instrument: str, timeframe: str):
     return {"error": "Invalid instrument or timeframe"}
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))  # Railway uses PORT from environment variables
+    port = int(os.getenv("PORT", 8000))  # Make sure Railway uses this!
     uvicorn.run(app, host="0.0.0.0", port=port)

@@ -68,10 +68,10 @@ def generate_chart(instrument: str, timeframe: str):
             data.columns = ['_'.join(col).strip() for col in data.columns.values]
 
         # ✅ Automatically rename any column that has an unexpected ticker suffix
-     for col in data.columns:
-         for key in ["Open", "High", "Low", "Close", "Volume"]:
-             if col.startswith(key) and col != key:
-                 data.rename(columns={col: key}, inplace=True)
+for col in data.columns:
+    for key in ["Open", "High", "Low", "Close", "Volume"]:
+        if col.startswith(key) and col != key:
+            data.rename(columns={col: key}, inplace=True)
 
         # ✅ Ensure numeric data and drop NaN rows
         for column in ["Open", "High", "Low", "Close", "Volume"]:
